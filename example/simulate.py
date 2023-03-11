@@ -99,7 +99,7 @@ def main():
 
     np.random.seed(0)
 
-    init_p = np.exp(np.random.randn(50, 500))
+    init_p = np.exp(np.random.randn(450, 500))
 
     # [stay, prop_radial, prop_transverse, radiative_cooling]
     w = [0.05, 0.20, 0.30, 0.10]

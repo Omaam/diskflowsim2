@@ -10,6 +10,11 @@ import utils
 
 
 def propagate_conv(x):
+    """Propagates with convolution.
+
+    Propagates the cells in the given array by convolving with
+    a kernel and rolling it.
+    """
     num_cells_r = x.shape[0]
     x = utils.im2col_array(x[None, None, :], kernel_size=(1, 2),
                            stride=1, pad=(0, 1))
@@ -30,12 +35,11 @@ def do_simulation(init_p, w, num_iter):
 
         p[0, 0] = np.exp(0.01*np.random.randn(1))
 
+        # The more a cell has potential, the more the cell gets photons..
         p = p + np.exp(0.001*np.random.randn(*p.shape)) * \
             utils.sigmoid(np.log10(p + 0.00001))
 
         ratios = dfs2.compute_propagation_ratio(p, w)
-        # r = np.arange(num_cells_t, num_cells_r, -1)
-        # ratios = dfs2.compute_propagation_ratio_with_radius(p, w, r)
 
         dp = p[..., None] * ratios
 
@@ -99,18 +103,14 @@ def main():
 
     np.random.seed(0)
 
-    init_p = np.exp(np.random.randn(450, 500))
+    init_p = np.exp(np.random.randn(50, 100))
 
     # [stay, prop_radial, prop_transverse, radiative_cooling]
     w = [0.05, 0.20, 0.30, 0.10]
     print(w)
 
-    num_iter = 400
+    num_iter = 500
     potentials, radiations = do_simulation(init_p, w, num_iter)
-
-    # fig, ax = plt.subplots()
-    # plot_snapshot(potentials[0], ax)
-    # plt.show()
 
     plot_animation(potentials, "potentials.gif")
     plot_animation(radiations, "radiations.gif")

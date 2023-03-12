@@ -1,6 +1,18 @@
 """Utilities.
 """
+import contextlib
+
 import numpy as np
+
+
+@contextlib.contextmanager
+def change_seed_temp(seed):
+    old_state = np.random.get_state()
+    try:
+        np.random.seed(seed)
+        yield
+    finally:
+        np.random.set_state(old_state)
 
 
 def get_conv_outsize(input_size, kernel_size, stride, pad):

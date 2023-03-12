@@ -1,28 +1,10 @@
 """
 """
-from matplotlib.animation import ArtistAnimation
-import matplotlib.pyplot as plt
 import numpy as np
-import tqdm
 
 import diskflowsim2 as dfs2
 import utils
-
-
-def propagate_conv(x):
-    """Propagates with convolution.
-
-    Propagates the cells in the given array by convolving with
-    a kernel and rolling it.
-    """
-    num_cells_r = x.shape[0]
-    x = utils.im2col_array(x[None, None, :], kernel_size=(1, 2),
-                           stride=1, pad=(0, 1))
-    x = np.dot(x, [1., 1.])
-    x = x.reshape((num_cells_r, -1))
-    x = x[:, 1:]
-    x = np.roll(x, shift=1, axis=0)
-    return x
+import plot_helper
 
 
 def do_simulation(init_p, w, num_iter):
@@ -46,7 +28,7 @@ def do_simulation(init_p, w, num_iter):
         dp_s = dp[..., 0]
 
         dp_r = dp[..., 1]
-        dp_r = propagate_conv(dp_r)
+        dp_r = dfs2.propagate_conv(dp_r)
         dp_r[0] = 0
 
         dp_t = dp[..., 2]
@@ -63,42 +45,6 @@ def do_simulation(init_p, w, num_iter):
     return potentials, radiations
 
 
-def plot_animation(xs, to_file="animation.gif"):
-    fig, ax = plt.subplots(figsize=(8, 5))
-    frames = []
-    for i in tqdm.trange(xs.shape[0]):
-        frame = ax.imshow(xs[i], cmap="jet",
-                          vmax=xs.max(), vmin=0)
-        frames.append([frame])
-    ax.axis("off")
-    fig.tight_layout()
-    ani = ArtistAnimation(fig, frames, interval=100)
-    ani.save(to_file)
-    # plt.show()
-    plt.close()
-
-
-def plot_snapshot(potential, ax, progress_bar=False):
-    num_anulus, num_segments = potential.shape
-    r_out, r_in = num_segments, num_segments - num_anulus
-    size = (r_out - r_in) / num_anulus
-
-    cmap = plt.colormaps["jet"]
-
-    for i, anulus in enumerate(tqdm.tqdm(potential,
-                                         disable=not(progress_bar))):
-        radius = int(r_out - i * size)
-        anulus_true = anulus[:radius]
-        colors = cmap(anulus_true)
-        fractions = (anulus_true > 0).astype(int)
-        ax.pie(fractions, radius=radius, colors=colors,
-               wedgeprops=dict(width=size))
-    ax.set_xlim(-r_out, r_out)
-    ax.set_ylim(-r_out, r_out)
-
-    return ax
-
-
 def main():
 
     np.random.seed(0)
@@ -112,8 +58,8 @@ def main():
     num_iter = 500
     potentials, radiations = do_simulation(init_p, w, num_iter)
 
-    plot_animation(potentials, "potentials.gif")
-    plot_animation(radiations, "radiations.gif")
+    plot_helper.plot_animation(potentials, "figs/potentials.gif")
+    plot_helper.plot_animation(radiations, "figs/radiations.gif")
 
 
 if __name__ == "__main__":

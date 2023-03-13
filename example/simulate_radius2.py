@@ -22,10 +22,9 @@ def do_simulation(p_init, w, num_iter):
             utils.sigmoid(np.log10(p + 0.00001))
 
         r = np.arange(num_cells_t, num_cells_t - num_cells_r, -1)
-        r2 = r**2
+        r2 = 1 / r**2
 
-        y = p[..., None] * w
-        y += r2[..., None, None] * 0.01 * w
+        y = p[..., None] * r2[..., None, None] * w
         ratios = dfs2.softmax(y)
 
         dp = p[..., None] * ratios
@@ -67,7 +66,7 @@ def main():
     p_init = np.zeros((97, 100))
     p_init = dfs2.arrange_diskshape(p_init)
 
-    w_seed = 1
+    w_seed = 6
     with utils.change_seed_temp(seed=w_seed):
         # [dp_s, dp_r(p, r^2), dp_t(p, r^2), de]
         # w = [0.05, 0.20, 0.30, 0.10]

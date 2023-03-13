@@ -17,13 +17,16 @@ def do_simulation(p_init, w, num_iter):
 
         p[0, 0] = np.exp(0.01*np.random.randn(1))
 
-        # The more a cell has potential, the more the cell gets photons..
+        # The more a cell has potential, the more the cell gets photons.
         p = p + np.exp(0.001*np.random.randn(*p.shape)) * \
             utils.sigmoid(np.log10(p + 0.00001))
 
         r = np.arange(num_cells_t, num_cells_t - num_cells_r, -1)
         r2 = r**2
-        ratios = dfs2.compute_propagation_ratio_with_radius(p, w, r2)
+
+        y = p[..., None] * w
+        y += r2[..., None, None] * 0.01 * w
+        ratios = dfs2.softmax(y)
 
         dp = p[..., None] * ratios
 
@@ -64,7 +67,7 @@ def main():
     p_init = np.zeros((97, 100))
     p_init = dfs2.arrange_diskshape(p_init)
 
-    w_seed = 10
+    w_seed = 1
     with utils.change_seed_temp(seed=w_seed):
         # [dp_s, dp_r(p, r^2), dp_t(p, r^2), de]
         # w = [0.05, 0.20, 0.30, 0.10]
@@ -81,14 +84,11 @@ def main():
     times = np.arange(num_seqs)
     plotting.plot_curves(times, radiations, 3, show=True)
 
-    if w_seed is None:
-        name_p = "figs/potentials_radius2_manual.gif"
-        name_r = "figs/radiations_radius2_manual.gif"
-    else:
-        name_p = f"figs/potentials_radius2_seed{w_seed:0>3}.gif"
-        name_r = f"figs/radiations_radius2_seed{w_seed:0>3}.gif"
-    plotting.plot_animation(potentials, name_p, show=True)
-    plotting.plot_animation(radiations, name_r, show=True)
+    xs = [[p, r] for p, r in zip(potentials, radiations)]
+    titles = ["Potential", "Radiation"]
+    anim = plotting.plot_animation_multiple(xs, titles)
+    plotting.save_animation(
+        anim, f"figs/animation_radius2_seed{w_seed:0>3}.gif")
 
 
 if __name__ == "__main__":

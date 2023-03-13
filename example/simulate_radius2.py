@@ -77,14 +77,18 @@ def main():
     num_iter = 500
     potentials, radiations = do_simulation(p_init, w, num_iter)
 
+    num_seqs = radiations.shape[0]
+    times = np.arange(num_seqs)
+    plotting.plot_curves(times, radiations, 3, show=True)
+
     if w_seed is None:
         name_p = "figs/potentials_radius2_manual.gif"
         name_r = "figs/radiations_radius2_manual.gif"
     else:
         name_p = f"figs/potentials_radius2_seed{w_seed:0>3}.gif"
         name_r = f"figs/radiations_radius2_seed{w_seed:0>3}.gif"
-    plotting.plot_animation(potentials, name_p)
-    plotting.plot_animation(radiations, name_r)
+    plotting.plot_animation(potentials, name_p, show=True)
+    plotting.plot_animation(radiations, name_r, show=True)
 
 
 if __name__ == "__main__":

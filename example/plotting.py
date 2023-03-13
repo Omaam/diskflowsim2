@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import tqdm
 
 
-def plot_animation(xs, to_file="animation.gif", verbose=False):
+def plot_animation(xs, savename=None, show=False, verbose=False):
     fig, ax = plt.subplots(figsize=(8, 5))
     frames = []
     for i in tqdm.trange(xs.shape[0], disable=not(verbose)):
@@ -15,8 +15,10 @@ def plot_animation(xs, to_file="animation.gif", verbose=False):
     ax.axis("off")
     fig.tight_layout()
     ani = ArtistAnimation(fig, frames, interval=100)
-    ani.save(to_file)
-    # plt.show()
+    if savename is not None:
+        ani.save(savename)
+    if show:
+        plt.show()
     plt.close()
 
 

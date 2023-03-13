@@ -90,9 +90,8 @@ def main():
     num_iter = 500
     potentials, radiations = run_simulation(p_init, w, num_iter)
 
-    num_seq, num_layer, _ = radiations.shape
-    times = np.arange(num_seq)
-
+    num_seqs = radiations.shape[0]
+    times = np.arange(num_seqs)
     plotting.plot_curves(times, radiations, 3, show=True)
 
     if w_seed is None:

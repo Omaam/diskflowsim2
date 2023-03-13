@@ -27,11 +27,3 @@ def propagate_conv(x):
     y = y[:, 1:]
     y = np.roll(y, shift=1, axis=0)
     return y
-
-
-def softmax(x):
-    # For avoiding overflow.
-    y = x - x.max(axis=-1, keepdims=True)
-    y = np.exp(y)
-    y /= y.sum(axis=-1, keepdims=True)
-    return y

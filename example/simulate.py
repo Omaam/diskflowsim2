@@ -4,7 +4,7 @@ import numpy as np
 
 import diskflowsim2 as dfs2
 import utils
-import plot_helper
+import plotting
 
 
 def do_simulation(init_p, w, num_iter):
@@ -58,8 +58,8 @@ def main():
     num_iter = 500
     potentials, radiations = do_simulation(init_p, w, num_iter)
 
-    plot_helper.plot_animation(potentials, "figs/potentials.gif")
-    plot_helper.plot_animation(radiations, "figs/radiations.gif")
+    plotting.plot_animation(potentials, "figs/potentials.gif")
+    plotting.plot_animation(radiations, "figs/radiations.gif")
 
 
 if __name__ == "__main__":

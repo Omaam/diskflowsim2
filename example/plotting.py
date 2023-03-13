@@ -39,3 +39,25 @@ def plot_snapshot(potential, ax, verbose=False):
     ax.set_ylim(-r_out, r_out)
 
     return ax
+
+
+def plot_curves(times, radiations, num_slices, savename=None, show=False):
+    num_layers = radiations.shape[1]
+
+    fig, ax = plt.subplots(num_slices + 1, sharex="col")
+    ax[0].plot(times, radiations.sum(axis=(1, 2)))
+    ax[0].set_ylabel("total")
+
+    jump = num_layers // (num_slices)
+    for i in range(num_slices):
+        curve = radiations[:, i*jump:(i+1)*jump].sum(axis=(1, 2))
+        ax[i+1].plot(times, curve)
+        ax[i+1].set_ylabel(f"layer {i}")
+    ax[-1].set_xlabel("time")
+
+    fig.align_ylabels()
+    plt.tight_layout()
+    if savename is not None:
+        plt.savefig(savename, dpi=150)
+    if show:
+        plt.show()

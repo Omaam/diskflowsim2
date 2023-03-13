@@ -1,6 +1,5 @@
 """
 """
-from numpy.typing import ArrayLike
 import numpy as np
 
 import diskflowsim2 as dfs2
@@ -8,19 +7,7 @@ import utils
 import plotting
 
 
-def run_simulation(p_init: ArrayLike, w: ArrayLike, num_iter: int):
-    """Run simulation.
-
-    Args:
-        p_init: indicates a disk configuration.
-                shape = (num_layers, num_segments_per_layer)
-        w: propagation weights.
-        num_iter: number of iteration for simulation.
-
-    Returns:
-        potentials: potentials.
-        radiations: radiations.
-    """
+def do_simulation(p_init, w, num_iter):
     potentials = np.zeros((num_iter, *p_init.shape))
     radiations = np.zeros((num_iter, *p_init.shape))
     p = p_init
@@ -34,8 +21,9 @@ def run_simulation(p_init: ArrayLike, w: ArrayLike, num_iter: int):
         p = p + np.exp(0.001*np.random.randn(*p.shape)) * \
             utils.sigmoid(np.log10(p + 0.00001))
 
-        r = np.arange(num_cells_t, num_cells_t - num_cells_r, -1)
-        ratios = dfs2.compute_propagation_ratio_with_radius(p, w, r)
+        r = np.arange(num_cells_t, num_cells_r, -1)
+        r2 = r**2
+        ratios = dfs2.compute_propagation_ratio_with_radius(p, w, r2)
 
         dp = p[..., None] * ratios
 
@@ -73,34 +61,28 @@ def main():
 
     np.random.seed(0)
 
-    # p_init = np.exp(np.random.randn(90, 100))
-    p_init = np.zeros((90, 100))
+    p_init = np.exp(np.random.randn(50, 100))
     p_init = dfs2.arrange_diskshape(p_init)
 
-    w_seed = 5
+    w_seed = 3
     with utils.change_seed_temp(seed=w_seed):
-        # [dp_s, dp_r(p, r), dp_t(p, r), de]
+        # [dp_s, dp_r(p, r^2), dp_t(p, r^2), de]
         # w = [0.05, 0.20, 0.30, 0.10]
         w = np.abs(np.random.randn(4))
     w /= np.sum(w)
-    weight_names = ["dp_s", "dp_r(p, r)", "dp_t(p, r)", "de"]
+    weight_names = ["dp_s", "dp_r(p, r^2)", "dp_t(p, r^2)", "de"]
     print(f"random weight seed: {w_seed}")
     print_weights(weight_names, w)
 
     num_iter = 500
-    potentials, radiations = run_simulation(p_init, w, num_iter)
-
-    num_seq, num_layer, _ = radiations.shape
-    times = np.arange(num_seq)
-
-    plotting.plot_curves(times, radiations, 3, show=True)
+    potentials, radiations = do_simulation(p_init, w, num_iter)
 
     if w_seed is None:
-        name_p = "figs/potentials_radius_manual.gif"
-        name_r = "figs/radiations_radius_manual.gif"
+        name_p = "figs/potentials_radius2_manual.gif"
+        name_r = "figs/radiations_radius2_manual.gif"
     else:
-        name_p = f"figs/potentials_radius_seed{w_seed:0>3}.gif"
-        name_r = f"figs/radiations_radius_seed{w_seed:0>3}.gif"
+        name_p = f"figs/potentials_radius2_seed{w_seed:0>3}.gif"
+        name_r = f"figs/radiations_radius2_seed{w_seed:0>3}.gif"
     plotting.plot_animation(potentials, name_p)
     plotting.plot_animation(radiations, name_r)
 

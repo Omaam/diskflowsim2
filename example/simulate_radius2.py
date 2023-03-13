@@ -21,7 +21,7 @@ def do_simulation(p_init, w, num_iter):
         p = p + np.exp(0.001*np.random.randn(*p.shape)) * \
             utils.sigmoid(np.log10(p + 0.00001))
 
-        r = np.arange(num_cells_t, num_cells_r, -1)
+        r = np.arange(num_cells_t, num_cells_t - num_cells_r, -1)
         r2 = r**2
         ratios = dfs2.compute_propagation_ratio_with_radius(p, w, r2)
 
@@ -61,10 +61,10 @@ def main():
 
     np.random.seed(0)
 
-    p_init = np.exp(np.random.randn(50, 100))
+    p_init = np.zeros((97, 100))
     p_init = dfs2.arrange_diskshape(p_init)
 
-    w_seed = 3
+    w_seed = 10
     with utils.change_seed_temp(seed=w_seed):
         # [dp_s, dp_r(p, r^2), dp_t(p, r^2), de]
         # w = [0.05, 0.20, 0.30, 0.10]

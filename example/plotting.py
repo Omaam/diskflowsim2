@@ -6,13 +6,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tqdm
 
+import diskflowsim2 as dfs2
+
 
 def plot_animation(xs, savename=None, show=False, verbose=False):
     fig, ax = plt.subplots(figsize=(8, 5))
     frames = []
+    vmin, vmax = np.unique(xs)[[1, -1]]  # Avoid array[0] == 0
     for i in tqdm.trange(xs.shape[0], disable=not(verbose)):
-        frame = ax.imshow(xs[i], cmap="jet",
-                          vmax=xs.max(), vmin=0)
+        frame = ax.imshow(xs[i], cmap="jet", vmax=vmax, vmin=vmin)
         frames.append([frame])
     ax.axis("off")
     fig.tight_layout()
@@ -37,12 +39,18 @@ def plot_animation_multiple(xs, titles=None, interval=100) -> FuncAnimation:
     xs = np.asarray(xs)
     num_frames, num_panels = xs.shape[:2]
 
+    # Only show triagular areas.
+    mask = np.ones(xs.shape[-2:])
+    mask = dfs2.arrange_diskshape(mask)
+    mask = np.where(mask == 0, np.nan, 1)
+    xs = xs * mask
+
     fig, ax = plt.subplots(1, num_panels, figsize=(6*num_panels, 6))
     fig.tight_layout()
 
     # Compute maximum and minimum for each panel.
-    vmaxs = np.max(xs, axis=(0, 2, 3))
-    vmins = np.min(xs, axis=(0, 2, 3))
+    vmaxs = np.nanmax(xs, axis=(0, 2, 3))
+    vmins = np.nanmin(xs, axis=(0, 2, 3))
 
     def update(frame):
         for j in range(num_panels):

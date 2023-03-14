@@ -130,5 +130,6 @@ dmypy.json
 
 # My ignore
 *.gif
+*.png
 *.swp
 *DS_Store*

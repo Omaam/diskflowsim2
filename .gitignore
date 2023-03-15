@@ -129,7 +129,8 @@ dmypy.json
 .pyre/
 
 # My ignore
+archive
+*DS_Store*
 *.gif
 *.png
 *.swp
-*DS_Store*

@@ -1,10 +1,16 @@
 """
 """
+import os
+import sys
+
 import numpy as np
 
+import common
 import diskflowsim2 as dfs2
 import plotting
 import utils
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 
 def do_simulation(p_init, ws, num_iter):
@@ -90,7 +96,7 @@ def main():
 
     xs = [[p, r] for p, r in zip(potentials, radiations)]
     titles = ["Potential", "Radiation"]
-    anim = plotting.plot_animation_multiple(xs, titles)
+    anim = common.plotting.plot_animation_multiple(xs, titles)
     plotting.save_animation(anim, f"figs/animation_seed{w_seed:0>3}.gif")
 
 

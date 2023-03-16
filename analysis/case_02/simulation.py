@@ -18,13 +18,13 @@ import utils
 
 FLAGS = flags.FLAGS
 flags.DEFINE_integer("seed", None, "")
-logging.set_verbosity(logging.INFO)
+logging.set_verbosity(logging.FATAL)
 
 
-def save_potential_radiation(idx, p, r, savepath, vminmax_p, vminmax_r):
+def save_potential_radiation(frame, p, r, savepath, vminmax_p, vminmax_r):
     fig, ax = plt.subplots(1, 2, figsize=(12, 6))
     fig.tight_layout()
-    fig.suptitle(f"Frame {idx}")
+    fig.suptitle(f"Frame {frame}")
     plotting.plot_snapshot_disk(p, ax[0], vminmax_p[1], vminmax_p[0])
     plotting.plot_snapshot_disk(r, ax[1], vminmax_r[1], vminmax_r[0])
     ax[0].set_title("Potential")
@@ -45,11 +45,11 @@ def save_anim_multiprocess(xs: ArrayLike, basename: str,
     vminmax_r = [np.nanmin(xs[:, 1]), np.nanmax(xs[:, 1])]
 
     with futures.ProcessPoolExecutor(10) as executor:
-        for i, x in enumerate(xs):
+        for frame, x in enumerate(xs):
             p, r = x
-            savename = f"{basename}_{i:03d}." + extension
+            savename = f"{basename}_{frame:03d}." + extension
             savepath = os.path.join(savedir, savename)
-            executor.submit(save_potential_radiation, i, p, r,
+            executor.submit(save_potential_radiation, frame, p, r,
                             savepath, vminmax_p, vminmax_r)
 
 

@@ -1,16 +1,56 @@
 """Run simulation.
 """
+from concurrent import futures
 from datetime import datetime
 import os
-import sys
 
+from absl import app
+from absl import flags
+from absl import logging
+from numpy.typing import ArrayLike
+import matplotlib.pyplot as plt
 import numpy as np
 
 import diskflowsim2 as dfs2
 import plotting
 import utils
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+FLAGS = flags.FLAGS
+flags.DEFINE_integer("seed", None, "")
+logging.set_verbosity(logging.INFO)
+
+
+def save_potential_radiation(idx, p, r, savepath, vminmax_p, vminmax_r):
+    fig, ax = plt.subplots(1, 2, figsize=(12, 6))
+    fig.tight_layout()
+    fig.suptitle(f"Frame {idx}")
+    plotting.plot_snapshot_disk(p, ax[0], vminmax_p[1], vminmax_p[0])
+    plotting.plot_snapshot_disk(r, ax[1], vminmax_r[1], vminmax_r[0])
+    ax[0].set_title("Potential")
+    ax[1].set_title("Radiation")
+
+    plt.savefig(savepath)
+    plt.close()
+    print(f"save {savepath}")
+
+
+def save_anim_multiprocess(xs: ArrayLike, basename: str,
+                           savedir: str, extension: str = "png"):
+
+    xs = np.asarray(xs)
+    xs = np.log10(1 + xs)
+
+    vminmax_p = [np.nanmin(xs[:, 0]), np.nanmax(xs[:, 0])]
+    vminmax_r = [np.nanmin(xs[:, 1]), np.nanmax(xs[:, 1])]
+
+    with futures.ProcessPoolExecutor(10) as executor:
+        for i, x in enumerate(xs):
+            p, r = x
+            savename = f"{basename}_{i:03d}." + extension
+            savepath = os.path.join(savedir, savename)
+            executor.submit(save_potential_radiation, i, p, r,
+                            savepath, vminmax_p, vminmax_r)
 
 
 def do_simulation(p_init, ws, num_iter):
@@ -63,14 +103,14 @@ def print_weights(names, values):
         print(f"{n:<{max_len + 1}}:", f"{v:>5}")
 
 
-def main():
+def main(argv):
 
     np.random.seed(0)
 
     p_init = np.zeros((97, 100))
     p_init = dfs2.arrange_diskshape(p_init)
 
-    w_seed = None
+    w_seed = FLAGS.seed
     if w_seed is None:
         print("no w_seed is used")
         # [dp_s, dp_r, dp_t, de]
@@ -82,8 +122,8 @@ def main():
         with utils.change_seed_temp(seed=w_seed):
             w = np.abs(np.random.randn(2, 4))
             signs = np.array(
-                [[1, 1, 1, 1],
-                 [1, 1, 1, 1]]
+                [[1, 1, 0, 1],
+                 [1, 1, 1, 0]]
              )
             w = w * signs
             w = np.round(w, 3)
@@ -102,18 +142,21 @@ def main():
     num_seqs = radiations.shape[0]
     times = np.arange(num_seqs)
     curvename = f"figs/curve_{seed_str}_{now_str}.png"
-    plotting.plot_curves(times, radiations, 3, show=True,
+    plotting.plot_curves(times, radiations, 3, show=False,
                          savename=curvename)
 
     xs = [[p, r] for p, r in zip(potentials, radiations)]
+
     titles = ["Potential", "Radiation"]
     anim = plotting.plot_animation_multiple(xs, titles)
     animname = f"figs/animation_{seed_str}_{now_str}.gif"
     plotting.save_animation(anim, animname)
+
+    save_anim_multiprocess(xs, "animation", "anim", "png")
 
     now = datetime.now()
     utils.save_info("run_info.txt", f"{seed_str:<10}", now_str, w)
 
 
 if __name__ == "__main__":
-    main()
+    app.run(main)

@@ -9,6 +9,10 @@ import tqdm
 import diskflowsim2 as dfs2
 
 
+def close():
+    plt.close()
+
+
 def plot_animation(xs, savename=None, show=False, verbose=False):
     fig, ax = plt.subplots(figsize=(8, 5))
     frames = []
@@ -55,7 +59,8 @@ def plot_animation_multiple(xs, titles=None, interval=100) -> FuncAnimation:
     def update(frame):
         for j in range(num_panels):
             ax[j].cla()
-            plot_snapshot(xs[frame][j], ax[j], vmaxs[j], vmins[j])
+            plot_snapshot(xs[frame][j], ax[j], vmaxs[j], vmins[j],
+                          verbose=False)
         if titles is not None:
             if len(titles) != num_panels:
                 raise ValueError("'len(titles)' must match 'num_panels'")
@@ -75,19 +80,19 @@ def plot_snapshot(x, ax, vmax, vmin=0, verbose=False):
     return ax
 
 
-def plot_snapshot_disk(potential, ax, verbose=False):
-    num_anulus, num_segments = potential.shape
+def plot_snapshot_disk(x, ax, vmax, vmin=0, verbose=False):
+    num_anulus, num_segments = x.shape
     r_out, r_in = num_segments, num_segments - num_anulus
     size = (r_out - r_in) / num_anulus
 
     cmap = plt.colormaps["magma"]
 
-    for i, anulus in enumerate(tqdm.tqdm(potential,
-                                         disable=not(verbose))):
+    x = (x - vmin) / (vmax - vmin)
+    for i, anulus in enumerate(tqdm.tqdm(x, disable=not(verbose))):
         radius = int(r_out - i * size)
         anulus_true = anulus[:radius]
         colors = cmap(anulus_true)
-        fractions = (anulus_true > 0).astype(int)
+        fractions = np.ones(anulus.shape)
         ax.pie(fractions, radius=radius, colors=colors,
                wedgeprops=dict(width=size))
     ax.set_xlim(-r_out, r_out)
@@ -120,6 +125,10 @@ def plot_curves(times, radiations, num_slices, savename=None, show=False):
 
 def save_animation(anim, savename):
     anim.save(savename)
+
+
+def save_figure(fig, savename, dpi=150):
+    fig.savefig(savename, dpi=dpi)
 
 
 def show():

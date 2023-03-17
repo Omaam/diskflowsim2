@@ -74,6 +74,28 @@ def plot_animation_multiple(xs, titles=None, interval=100) -> FuncAnimation:
     return anim
 
 
+def plot_curves(times, radiations, num_layers, savename=None, show=False):
+    num_radius = radiations.shape[1]
+
+    fig, ax = plt.subplots(num_layers + 1, sharex="col")
+    ax[0].plot(times, radiations.sum(axis=(1, 2)))
+    ax[0].set_ylabel("total")
+
+    jump = num_radius // (num_layers)
+    for i in range(num_layers):
+        curve = radiations[:, i*jump:(i+1)*jump].sum(axis=(1, 2))
+        ax[i+1].plot(times, curve)
+        ax[i+1].set_ylabel(f"layer {i}")
+    ax[-1].set_xlabel("time")
+
+    fig.align_ylabels()
+    plt.tight_layout()
+    if savename is not None:
+        plt.savefig(savename, dpi=150)
+    if show:
+        plt.show()
+
+
 def plot_snapshot(x, ax, vmax, vmin=0, verbose=False):
     ax.imshow(x, cmap="magma", vmax=vmax, vmin=vmin)
     ax.axis("off")
@@ -99,28 +121,6 @@ def plot_snapshot_disk(x, ax, vmax, vmin=0, verbose=False):
     ax.set_ylim(-r_out, r_out)
 
     return ax
-
-
-def plot_curves(times, radiations, num_slices, savename=None, show=False):
-    num_layers = radiations.shape[1]
-
-    fig, ax = plt.subplots(num_slices + 1, sharex="col")
-    ax[0].plot(times, radiations.sum(axis=(1, 2)))
-    ax[0].set_ylabel("total")
-
-    jump = num_layers // (num_slices)
-    for i in range(num_slices):
-        curve = radiations[:, i*jump:(i+1)*jump].sum(axis=(1, 2))
-        ax[i+1].plot(times, curve)
-        ax[i+1].set_ylabel(f"layer {i}")
-    ax[-1].set_xlabel("time")
-
-    fig.align_ylabels()
-    plt.tight_layout()
-    if savename is not None:
-        plt.savefig(savename, dpi=150)
-    if show:
-        plt.show()
 
 
 def save_animation(anim, savename):

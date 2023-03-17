@@ -21,7 +21,7 @@ def create_animation(savedir, extension='png'):
 
 def main():
     ani = create_animation('anim', extension='.png')
-    ani.save('example.gif', writer='pillow')
+    ani.save('../figs/animation.gif', writer='pillow')
     plt.show()
 
 

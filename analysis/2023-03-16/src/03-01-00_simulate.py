@@ -135,13 +135,15 @@ def main(argv):
     potentials, radiations = do_simulation(p_init, w, num_iter)
 
     now = datetime.now()
-    now_str = datetime.strftime(now, "%Y-%m-%d_%H:%M:%S")
-
+    now_str = datetime.strftime(now, "%Y-%m-%d_%H-%M-%S")
     seed_str = "seed" + str(w_seed).rjust(3, "0")
+
+    np.save(f"../data/out/potentials_{seed_str}_{now_str}.npz", potentials)
+    np.save(f"../data/out/radiations_{seed_str}_{now_str}.npz", radiations)
 
     num_seqs = radiations.shape[0]
     times = np.arange(num_seqs)
-    curvename = f"figs/curve_{seed_str}_{now_str}.png"
+    curvename = f"../figs/anim/curve_{seed_str}_{now_str}.png"
     plotting.plot_curves(times, radiations, 3, show=False,
                          savename=curvename)
 
@@ -149,7 +151,7 @@ def main(argv):
 
     titles = ["Potential", "Radiation"]
     anim = plotting.plot_animation_multiple(xs, titles)
-    animname = f"figs/animation_{seed_str}_{now_str}.gif"
+    animname = f"../figs/anim/animation_{seed_str}_{now_str}.gif"
     plotting.save_animation(anim, animname)
 
     save_anim_multiprocess(xs, "animation", "anim", "png")

@@ -9,16 +9,13 @@ import numpy as np
 
 def main():
 
-    # potential_path = sorted(glob.glob("../data/out/potentials_*.npy"))[-1]
-    # potentials = np.load(potential_path)
-
     radiation_path = sorted(glob.glob("../data/out/radiations_*.npy"))[-1]
     radiations = np.load(radiation_path)
 
     num_times, num_radius, num_trans = radiations.shape
 
     idx_stable = 500
-    num_layers = 2
+    num_layers = 5
 
     radiations = radiations[idx_stable:]
 
@@ -35,7 +32,7 @@ def main():
 
     times = np.arange(num_times-idx_stable)
     fig, ax = plt.subplots(num_layers, 2, sharex="col",
-                           width_ratios=(3, 1))
+                           width_ratios=(3, 1), figsize=(8, 5))
     for i in range(num_layers):
         ax[i, 0].plot(times, curve_list[i])
         ax[i, 1].plot(freqs, powers_list[i])

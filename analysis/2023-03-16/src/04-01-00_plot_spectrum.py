@@ -15,7 +15,7 @@ def main():
     num_times, num_radius, num_trans = radiations.shape
 
     idx_stable = 500
-    num_layers = 5
+    num_layers = 3
 
     radiations = radiations[idx_stable:]
 
@@ -25,21 +25,25 @@ def main():
         curve = radiations[:, i*jump:(i+1)*jump].sum(axis=(1, 2))
         curve_list.append(curve)
 
-    powers_list = []
-    for curve in curve_list:
-        freqs, powers = signal.welch(curve)
-        powers_list.append(powers)
+    freqs, powers_list = signal.welch(np.array(curve_list))
 
     times = np.arange(num_times-idx_stable)
-    fig, ax = plt.subplots(num_layers, 2, sharex="col",
-                           width_ratios=(3, 1), figsize=(8, 5))
+    fig, ax = plt.subplots(num_layers, 2,
+                           squeeze=False,
+                           sharex="col",
+                           width_ratios=(3, 1),
+                           figsize=(12, 2*num_layers))
     for i in range(num_layers):
         ax[i, 0].plot(times, curve_list[i])
         ax[i, 1].plot(freqs, powers_list[i])
 
-        ax[i, 1].set_yscale("log")
+        ax[i, 0].set_ylabel(f"Layer {i}")
         ax[i, 1].set_xscale("log")
+        ax[i, 1].set_yscale("log")
 
+    ax[-1, 0].set_xlabel("Time (sample)")
+    ax[-1, 1].set_xlabel("Frequency (Hz)")
+    fig.align_ylabels()
     fig.tight_layout()
     plt.show()
     plt.close()

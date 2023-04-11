@@ -3,9 +3,9 @@
 import numpy as np
 
 
-def softmax(x):
+def softmax(x, axis=None):
     # For avoiding overflow.
-    y = x - x.max(axis=-1, keepdims=True)
+    y = x - x.max(axis=axis, keepdims=True)
     y = np.exp(y)
-    y /= y.sum(axis=-1, keepdims=True)
+    y /= y.sum(axis=axis, keepdims=True)
     return y

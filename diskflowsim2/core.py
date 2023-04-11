@@ -14,7 +14,7 @@ def compute_propagation_ratio_with_radius(x, w, r):
     return dfs2.softmax(x[..., None] * r[..., None, None] * w)
 
 
-def propagate_conv(x):
+def propagate_conv(x, weight=[0.5, 0.5]):
     """Propagates with convolution.
 
     Propagates the cells in the given array by convolving with
@@ -28,7 +28,7 @@ def propagate_conv(x):
     y = utils.im2col_array(y[None, None, :], kernel_size=(1, 2),
                            stride=1, pad=(0, 0))
 
-    kernel = np.array([0.5, 0.5])
+    kernel = np.array(weight)
     y = np.dot(y, kernel)
     y = y.reshape((num_cells_r, -1))
 

@@ -22,15 +22,14 @@ def propagate_conv(x):
     """
     num_cells_r = x.shape[0]
 
-    # Convolution of arr[-1] and arr[0]
-    y = np.hstack([x, x[:, 0][:, None]])
-
-    y = utils.im2col_array(y[None, None, :], kernel_size=(1, 2),
-                           stride=1, pad=(0, 0))
+    y = utils.im2col_array(x[None, None, :], kernel_size=(1, 2),
+                           stride=1, pad=(0, 1))
 
     kernel = np.array([0.5, 0.5])
     y = np.dot(y, kernel)
     y = y.reshape((num_cells_r, -1))
+
+    y = y[:, 1:]
 
     y = np.roll(y, shift=1, axis=0)
     y[0] = 0
